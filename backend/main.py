@@ -324,13 +324,15 @@ async def chat(chat_msg: ChatMessage):
         ]
 
         if chat_msg.stream:
-            # Streaming response
-            async def generate():
-                async for chunk in ai_client.chat_stream(messages):
-                    yield chunk
-
-            # Save to memory (non-blocking)
+            # Streaming response — accumulate full reply to save to memory after stream ends
             memory_manager.add_message("user", chat_msg.message)
+
+            async def generate():
+                full_response = []
+                async for chunk in ai_client.chat_stream(messages):
+                    full_response.append(chunk)
+                    yield chunk
+                memory_manager.add_message("assistant", "".join(full_response))
 
             return StreamingResponse(generate(), media_type="text/plain")
         else:
