@@ -31,16 +31,17 @@ class MemoryManager:
             return
 
         config = config_manager.get_config()
+        if not config.api.api_key or not config.api.base_url:
+            return
 
         try:
-            # Initialize Mem0 with OpenAI-compatible config
-            # Note: Adjust config based on mem0ai version
             mem_config = {
                 "llm": {
                     "provider": "openai",
                     "config": {
                         "model": config.api.model,
                         "api_key": config.api.api_key,
+                        "openai_base_url": config.api.base_url,
                     }
                 },
                 "embedder": {
@@ -48,6 +49,7 @@ class MemoryManager:
                     "config": {
                         "model": "text-embedding-ada-002",
                         "api_key": config.api.api_key,
+                        "openai_base_url": config.api.base_url,
                     }
                 },
                 "vector_store": {
@@ -64,6 +66,11 @@ class MemoryManager:
             print(f"Error initializing Mem0: {e}")
             print("Memory features will be limited. To enable full memory, ensure Mem0 is properly configured.")
             self.memory = None
+
+    def refresh_memory(self):
+        """Re-initialize memory with current config (call after API config changes)"""
+        self.memory = None
+        self._initialize_memory()
 
     def add_message(self, role: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
         """

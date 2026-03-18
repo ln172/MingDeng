@@ -122,8 +122,9 @@ async def update_config(config_update: ConfigUpdate):
                 api_key=config_update.api_key,
                 model=config_update.model
             )
-            # Refresh AI client with new config
+            # Refresh AI client and memory with new config
             ai_client.refresh_client()
+            memory_manager.refresh_memory()
 
         if config_update.user_name or config_update.timezone:
             config_manager.update_user_config(
