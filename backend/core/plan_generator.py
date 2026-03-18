@@ -3,6 +3,7 @@ Plan Generator Module
 Handles AI-powered learning plan generation
 """
 
+import uuid
 from typing import Dict, Any
 from datetime import datetime, timedelta, date
 from .ai import ai_client
@@ -156,7 +157,6 @@ class PlanGenerator:
         # Ensure all tasks have IDs
         for task in existing_plan["tasks"]:
             if "id" not in task:
-                import uuid
                 task["id"] = str(uuid.uuid4())
 
         # Save updated plan
@@ -272,9 +272,14 @@ class PlanGenerator:
 只返回 JSON，不要其他文字。
 """
 
-        # Get AI rescheduling
+        # Get AI rescheduling — call chat() directly to avoid wrapping inside generate_plan's template
         try:
-            plan_data = await self.ai_client.generate_plan(prompt)
+            messages = [
+                {"role": "system", "content": "你是 MingDeng 学习规划助手，擅长根据用户学习进度智能重新安排任务。"},
+                {"role": "user", "content": prompt},
+            ]
+            response = await self.ai_client.chat(messages, temperature=0.5)
+            plan_data = self.ai_client._extract_json(response)
 
             # Update tasks in storage
             rescheduled_tasks = plan_data.get("tasks", [])

@@ -93,6 +93,16 @@ class AIClient:
         except Exception as e:
             raise Exception(f"AI API Error: {str(e)}")
 
+    def _extract_json(self, response: str) -> Dict[str, Any]:
+        """Extract and parse JSON from a model response, stripping any code fences."""
+        if "```json" in response:
+            json_str = response.split("```json")[1].split("```")[0].strip()
+        elif "```" in response:
+            json_str = response.split("```")[1].split("```")[0].strip()
+        else:
+            json_str = response.strip()
+        return json.loads(json_str)
+
     async def generate_plan(self, user_input: str) -> Dict[str, Any]:
         """
         Generate learning plan from user input
@@ -145,18 +155,8 @@ class AIClient:
 
         response = await self.chat(messages, temperature=0.7)
 
-        # Parse JSON from response
         try:
-            # Try to extract JSON from code blocks if present
-            if "```json" in response:
-                json_str = response.split("```json")[1].split("```")[0].strip()
-            elif "```" in response:
-                json_str = response.split("```")[1].split("```")[0].strip()
-            else:
-                json_str = response.strip()
-
-            plan_data = json.loads(json_str)
-            return plan_data
+            return self._extract_json(response)
         except Exception as e:
             raise Exception(f"Failed to parse AI response as JSON: {str(e)}\nResponse: {response}")
 
@@ -203,15 +203,8 @@ class AIClient:
         response = await self.chat(messages, temperature=0.5)
 
         try:
-            if "```json" in response:
-                json_str = response.split("```json")[1].split("```")[0].strip()
-            elif "```" in response:
-                json_str = response.split("```")[1].split("```")[0].strip()
-            else:
-                json_str = response.strip()
-
-            return json.loads(json_str)
-        except Exception as e:
+            return self._extract_json(response)
+        except Exception:
             return {"linked_task_id": None, "reason": "无法自动关联"}
 
 
