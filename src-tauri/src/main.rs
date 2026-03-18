@@ -7,7 +7,6 @@ use std::{
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::Mutex,
-    thread,
     time::Duration,
 };
 use tauri::{AppHandle, Manager, State, WindowEvent};
@@ -73,8 +72,20 @@ async fn ensure_backend(app: AppHandle, state: State<'_, BackendState>) -> Resul
         .spawn()
         .map_err(|e| format!("Failed to start Python backend: {e}"))?;
 
-    // Give the backend a moment to bind before returning the origin.
-    thread::sleep(Duration::from_millis(300));
+    // Poll the backend's health endpoint until it responds (up to 5 seconds).
+    let health_url = format!("http://127.0.0.1:{port}/");
+    let client = reqwest::Client::new();
+    let mut ready = false;
+    for _ in 0..50 {
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        if client.get(&health_url).send().await.is_ok() {
+            ready = true;
+            break;
+        }
+    }
+    if !ready {
+        return Err("Backend did not become ready within 5 seconds".to_string());
+    }
 
     state.set(child, port);
 
