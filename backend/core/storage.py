@@ -4,6 +4,8 @@ Handles JSON file operations for todos and library
 """
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
@@ -37,13 +39,25 @@ class Storage:
             return self._get_default_data()
 
     def _write_data(self, data: Dict[str, Any]) -> bool:
-        """Write data to file"""
+        """Write data to file atomically (write to temp file then replace)"""
+        tmp_path = None
         try:
-            with open(self.file_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            dir_path = self.file_path.parent
+            with tempfile.NamedTemporaryFile(
+                mode='w', encoding='utf-8', dir=dir_path,
+                delete=False, suffix='.tmp'
+            ) as tmp:
+                json.dump(data, tmp, indent=2, ensure_ascii=False)
+                tmp_path = tmp.name
+            os.replace(tmp_path, self.file_path)
             return True
         except Exception as e:
             print(f"Error writing {self.file_path}: {e}")
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
             return False
 
     def get_all(self) -> Dict[str, Any]:
