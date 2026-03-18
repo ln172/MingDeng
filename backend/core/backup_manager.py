@@ -123,6 +123,10 @@ class BackupManager:
         backups.sort(key=lambda x: x["timestamp"], reverse=True)
         return backups
 
+    def _validate_backup_id(self, backup_id: str) -> bool:
+        """Reject backup IDs that could cause path traversal"""
+        return bool(backup_id) and "/" not in backup_id and "\\" not in backup_id and ".." not in backup_id
+
     def restore_backup(self, backup_id: str) -> Dict[str, Any]:
         """
         Restore data from a backup
@@ -133,6 +137,9 @@ class BackupManager:
         Returns:
             Restoration result
         """
+        if not self._validate_backup_id(backup_id):
+            return {"success": False, "error": "非法 backup_id"}
+
         backup_path = self.backup_dir / backup_id
 
         if not backup_path.exists():
@@ -180,6 +187,9 @@ class BackupManager:
         Returns:
             Success status
         """
+        if not self._validate_backup_id(backup_id):
+            return False
+
         backup_path = self.backup_dir / backup_id
 
         if not backup_path.exists():

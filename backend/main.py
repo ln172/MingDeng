@@ -20,10 +20,17 @@ from core.ai import ai_client
 
 app = FastAPI(title="MingDeng API", version="0.1.0")
 
-# Enable CORS for Tauri
+# Enable CORS for Tauri and local web dev
+# Note: allow_origins=["*"] is incompatible with allow_credentials=True per CORS spec.
+# List explicit local origins instead.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "tauri://localhost",
+        "https://tauri.localhost",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
