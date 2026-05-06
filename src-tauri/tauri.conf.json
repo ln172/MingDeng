@@ -1,39 +1,35 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
   "productName": "MingDeng",
-  "version": "0.1.0",
-  "identifier": "com.mingdeng",
+  "version": "0.2.0",
+  "identifier": "com.mingdeng.desktop",
   "build": {
-    "beforeDevCommand": "cd src && python3 -m http.server 1420 --bind 127.0.0.1",
-    "beforeBuildCommand": "python3 -m venv backend-venv && backend-venv/bin/pip install -r backend/requirements.txt",
+    "beforeDevCommand": "npm run dev:web",
     "devUrl": "http://localhost:1420",
-    "frontendDist": "../src"
+    "beforeBuildCommand": "npm run build:web",
+    "frontendDist": "../dist"
   },
   "app": {
-    "withGlobalTauri": true,
-    "security": {
-      "csp": null
-    },
     "windows": [
       {
-        "fullscreen": false,
-        "resizable": true,
         "title": "MingDeng - 明灯学习助手",
-        "width": 1200,
-        "height": 800,
-        "minWidth": 800,
-        "minHeight": 600
+        "width": 380,
+        "height": 172,
+        "minWidth": 360,
+        "minHeight": 132,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "shadow": true
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/icon_128.png"
-    ],
-    "resources": [
-      "../backend",
-      "../backend-venv"
-    ]
+    "targets": "all"
   }
 }

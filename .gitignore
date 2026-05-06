@@ -1,33 +1,15 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
+# Dependencies and build output
+node_modules/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+src-tauri/target/
+src-tauri/gen/
 
-# Virtual Environment
-venv/
-env/
-ENV/
-.venv
+# Local app data
+data/
+mingdeng/data/
+
+# IDE and local tooling
 .claude/
-backend-venv/
-# IDE
 .vscode/
 .idea/
 *.swp
@@ -35,24 +17,9 @@ backend-venv/
 *~
 .DS_Store
 
-# MingDeng 数据文件（包含敏感信息）
-mingdeng/data/
-data/
-
 # 日志
 *.log
-
-# 测试
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # 临时文件
 *.tmp
 *.bak
-data/
-src-tauri/target/

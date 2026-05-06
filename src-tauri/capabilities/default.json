@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Permissions for the MingDeng floating widget window.",
+  "windows": ["main"],
+  "permissions": ["core:window:allow-start-dragging"]
+}

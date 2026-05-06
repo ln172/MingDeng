@@ -1,26 +1,23 @@
 [package]
 name = "mingdeng"
-version = "0.1.0"
-description = "MingDeng - AI Learning Assistant"
+version = "0.2.0"
+description = "MingDeng - lightweight AI learning assistant"
 authors = ["MingDeng Team"]
 license = "MIT"
-repository = ""
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2.0", features = [] }
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1", features = ["full"] }
-portpicker = "0.1"
+tauri = { version = "2.0", features = [] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "1.11", features = ["v4", "serde"] }
 
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
+[dev-dependencies]
+tempfile = "3.13"

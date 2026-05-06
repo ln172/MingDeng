@@ -1,24 +1,30 @@
 {
   "name": "mingdeng",
-  "version": "0.1.0",
-  "description": "MingDeng - AI Learning Assistant",
+  "version": "0.2.0",
+  "private": true,
+  "description": "MingDeng - lightweight AI learning assistant",
+  "type": "module",
   "scripts": {
-    "tauri": "tauri",
     "dev": "tauri dev",
+    "dev:web": "vite --host 127.0.0.1 --port 1420",
     "build": "tauri build",
-    "backend": "cd backend && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8765",
-    "install-deps": "cd backend && pip install -r requirements.txt"
+    "build:web": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "cargo test --manifest-path src-tauri/Cargo.toml"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.2.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.0.0"
+    "@tauri-apps/cli": "^2.2.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
   },
   "keywords": [
     "learning",
     "ai",
     "assistant",
-    "education",
-    "productivity"
+    "tauri"
   ],
-  "author": "MingDeng Team",
   "license": "MIT"
 }
