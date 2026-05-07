@@ -966,6 +966,11 @@ fn delete_plan(app: AppHandle, plan_id: String) -> AppResult<bool> {
 }
 
 #[tauri::command]
+fn delete_plan_by_id(app: AppHandle, id: String) -> AppResult<bool> {
+    delete_plan(app, id)
+}
+
+#[tauri::command]
 fn tasks_by_date(app: AppHandle, date: String) -> AppResult<Vec<Task>> {
     let data = app_store(&app)?.todos()?;
     Ok(data
@@ -989,6 +994,11 @@ fn update_task(app: AppHandle, task_id: String, updates: TaskUpdate) -> AppResul
 #[tauri::command]
 fn delete_task(app: AppHandle, task_id: String) -> AppResult<bool> {
     app_store(&app)?.delete_task(&task_id)
+}
+
+#[tauri::command]
+fn delete_task_by_id(app: AppHandle, id: String) -> AppResult<bool> {
+    delete_task(app, id)
 }
 
 #[tauri::command]
@@ -1541,10 +1551,12 @@ fn main() {
             save_config,
             list_plans,
             delete_plan,
+            delete_plan_by_id,
             tasks_by_date,
             create_task,
             update_task,
             delete_task,
+            delete_task_by_id,
             complete_task,
             uncomplete_task,
             generate_plan,

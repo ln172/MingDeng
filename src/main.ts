@@ -622,8 +622,14 @@ function wireTaskActions(): void {
   document.querySelectorAll<HTMLButtonElement>(".task-delete").forEach((button) => {
     button.addEventListener("click", async (event) => {
       event.stopPropagation();
-      if (!confirm("确定要删除这个任务吗？")) return;
-      const deleted = await call<boolean>("delete_task", { taskId: button.dataset.taskId || "" });
+      const id = button.dataset.taskId || "";
+      if (!id) {
+        toast("任务 ID 缺失，无法删除");
+        return;
+      }
+      const ok = await confirmDialog("删除任务", "确定要删除这个任务吗？");
+      if (!ok) return;
+      const deleted = await call<boolean>("delete_task", { taskId: id });
       if (!deleted) toast("没有找到要删除的任务");
       closeModal();
       await refreshCurrentPage();
@@ -744,8 +750,14 @@ async function renderPlan(): Promise<void> {
   document.querySelector("#generate-plan")?.addEventListener("click", generatePlan);
   document.querySelectorAll<HTMLButtonElement>(".plan-delete").forEach((button) => {
     button.addEventListener("click", async () => {
-      if (!confirm("确定要删除这个计划和其中所有任务吗？")) return;
-      const deleted = await call<boolean>("delete_plan", { planId: button.dataset.planId || "" });
+      const id = button.dataset.planId || "";
+      if (!id) {
+        toast("计划 ID 缺失，无法删除");
+        return;
+      }
+      const ok = await confirmDialog("删除计划", "确定要删除这个计划和其中所有任务吗？");
+      if (!ok) return;
+      const deleted = await call<boolean>("delete_plan", { planId: id });
       if (!deleted) toast("没有找到要删除的计划");
       await renderPlan();
     });
@@ -1175,6 +1187,34 @@ function showModal(content: string): void {
 
 function closeModal(): void {
   document.querySelector(".modal-backdrop")?.remove();
+}
+
+function confirmDialog(title: string, message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    document.querySelector(".confirm-backdrop")?.remove();
+    const wrapper = document.createElement("div");
+    wrapper.className = "confirm-backdrop";
+    wrapper.innerHTML = `
+      <section class="confirm-dialog">
+        <h3>${h(title)}</h3>
+        <p>${h(message)}</p>
+        <div class="toolbar" style="justify-content:flex-end">
+          <button class="button" data-confirm-cancel>取消</button>
+          <button class="button danger" data-confirm-ok>删除</button>
+        </div>
+      </section>
+    `;
+    const finish = (value: boolean) => {
+      wrapper.remove();
+      resolve(value);
+    };
+    wrapper.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target === wrapper || target.hasAttribute("data-confirm-cancel")) finish(false);
+      if (target.hasAttribute("data-confirm-ok")) finish(true);
+    });
+    document.body.appendChild(wrapper);
+  });
 }
 
 function inputValue(id: string): string {
