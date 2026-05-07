@@ -315,7 +315,7 @@ async function renderShell(): Promise<void> {
   document.querySelectorAll<HTMLInputElement>(".peek-task-toggle").forEach((checkbox) => {
     checkbox.addEventListener("change", async () => {
       const taskId = checkbox.dataset.taskId || "";
-      await call<boolean>(checkbox.checked ? "complete_task" : "uncomplete_task", { taskId });
+      await call<boolean>(checkbox.checked ? "complete_task" : "uncomplete_task", { task_id: taskId });
       await renderShell();
     });
   });
@@ -615,7 +615,7 @@ function wireTaskActions(): void {
   document.querySelectorAll<HTMLInputElement>(".task-toggle").forEach((checkbox) => {
     checkbox.addEventListener("change", async () => {
       const taskId = checkbox.dataset.taskId || "";
-      await call<boolean>(checkbox.checked ? "complete_task" : "uncomplete_task", { taskId });
+      await call<boolean>(checkbox.checked ? "complete_task" : "uncomplete_task", { task_id: taskId });
       await refreshCurrentPage();
     });
   });
@@ -623,7 +623,8 @@ function wireTaskActions(): void {
     button.addEventListener("click", async (event) => {
       event.stopPropagation();
       if (!confirm("确定要删除这个任务吗？")) return;
-      await call<boolean>("delete_task", { taskId: button.dataset.taskId || "" });
+      const deleted = await call<boolean>("delete_task", { task_id: button.dataset.taskId || "" });
+      if (!deleted) toast("没有找到要删除的任务");
       closeModal();
       await refreshCurrentPage();
     });
@@ -698,7 +699,7 @@ function openTaskEditor(task?: Task): void {
       return;
     }
     if (task) {
-      await call<boolean>("update_task", { taskId: task.id, updates: payload });
+      await call<boolean>("update_task", { task_id: task.id, updates: payload });
     } else {
       await call<Task>("create_task", { task: { ...payload, plan_id: null } });
     }
@@ -744,7 +745,8 @@ async function renderPlan(): Promise<void> {
   document.querySelectorAll<HTMLButtonElement>(".plan-delete").forEach((button) => {
     button.addEventListener("click", async () => {
       if (!confirm("确定要删除这个计划和其中所有任务吗？")) return;
-      await call<boolean>("delete_plan", { planId: button.dataset.planId || "" });
+      const deleted = await call<boolean>("delete_plan", { plan_id: button.dataset.planId || "" });
+      if (!deleted) toast("没有找到要删除的计划");
       await renderPlan();
     });
   });
@@ -855,7 +857,7 @@ async function renderLibrary(): Promise<void> {
   document.querySelectorAll<HTMLButtonElement>(".resource-delete").forEach((button) => {
     button.addEventListener("click", async () => {
       if (!confirm("确定删除这个资源吗？")) return;
-      await call<boolean>("delete_resource", { resourceId: button.dataset.resourceId || "" });
+      await call<boolean>("delete_resource", { resource_id: button.dataset.resourceId || "" });
       await renderLibrary();
     });
   });
@@ -864,7 +866,7 @@ async function renderLibrary(): Promise<void> {
       const description = prompt("新的资源描述");
       if (description === null) return;
       await call<boolean>("update_resource", {
-        resourceId: button.dataset.resourceId || "",
+        resource_id: button.dataset.resourceId || "",
         updates: { description },
       });
       await renderLibrary();
@@ -1036,14 +1038,14 @@ async function renderSettings(): Promise<void> {
   document.querySelectorAll<HTMLButtonElement>(".backup-restore").forEach((button) => {
     button.addEventListener("click", async () => {
       if (!confirm("确定恢复这个备份吗？当前数据会先自动备份。")) return;
-      await call<BackupInfo>("restore_backup", { backupId: button.dataset.backupId || "" });
+      await call<BackupInfo>("restore_backup", { backup_id: button.dataset.backupId || "" });
       await refreshCurrentPage();
     });
   });
   document.querySelectorAll<HTMLButtonElement>(".backup-delete").forEach((button) => {
     button.addEventListener("click", async () => {
       if (!confirm("确定删除这个备份吗？")) return;
-      await call<boolean>("delete_backup", { backupId: button.dataset.backupId || "" });
+      await call<boolean>("delete_backup", { backup_id: button.dataset.backupId || "" });
       await renderSettings();
     });
   });
