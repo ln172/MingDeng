@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "test": "cargo test --manifest-path src-tauri/Cargo.toml",
     "version": "node scripts/sync-version.mjs && git add src-tauri/Cargo.toml src-tauri/tauri.conf.json",
-    "release": "npm version patch -m 'chore: bump version to v%s' && git push --follow-tags"
+    "release": "npm version patch -m \"chore: bump version to v%s\" && git push --follow-tags"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.2.0"
