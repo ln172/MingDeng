@@ -1,0 +1,112 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-version:
+    name: Check Version Consistency
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract version from Tag or package.json
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check package.json
+        run: |
+          PKG_VER=$(jq -r .version package.json)
+          if [ "$PKG_VER" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::package.json version ($PKG_VER) does not match tag version (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Check Cargo.toml
+        run: |
+          CARGO_VER=$(grep -m1 '^version' src-tauri/Cargo.toml | awk -F '"' '{print $2}')
+          if [ "$CARGO_VER" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::Cargo.toml version ($CARGO_VER) does not match tag version (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Check tauri.conf.json
+        run: |
+          TAURI_VER=$(jq -r .version src-tauri/tauri.conf.json)
+          if [ "$TAURI_VER" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::tauri.conf.json version ($TAURI_VER) does not match tag version (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+
+  release:
+    name: Build and Release
+    needs: check-version
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target universal-apple-darwin'
+          - platform: ubuntu-24.04
+            args: ''
+          - platform: windows-latest
+            args: ''
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # --- Rust ---
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: ${{ matrix.platform }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-24.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libgtk-3-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build and Release with Tauri Action
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'MingDeng v__VERSION__'
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
