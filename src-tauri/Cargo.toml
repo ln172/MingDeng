@@ -1,6 +1,6 @@
 [package]
 name = "mingdeng"
-version = "0.2.1"
+version = "0.2.2"
 description = "MingDeng - lightweight AI learning assistant"
 authors = ["MingDeng Team"]
 license = "MIT"
